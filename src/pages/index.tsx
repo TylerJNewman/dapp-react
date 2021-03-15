@@ -1,56 +1,53 @@
-import {
-  Link as ChakraLink,
-  Text,
-  Code,
-  List,
-  ListIcon,
-  ListItem,
-} from '@chakra-ui/react'
-import { CheckCircleIcon, LinkIcon } from '@chakra-ui/icons'
+import React from 'react'
+import {Web3ReactProvider} from '@web3-react/core'
+import {Web3Provider} from '@ethersproject/providers'
+import {useWeb3React} from '@web3-react/core'
+import {InjectedConnector} from '@web3-react/injected-connector'
 
-import { Hero } from '../components/Hero'
-import { Container } from '../components/Container'
-import { Main } from '../components/Main'
-import { DarkModeSwitch } from '../components/DarkModeSwitch'
-import { CTA } from '../components/CTA'
-import { Footer } from '../components/Footer'
+export const injectedConnector = new InjectedConnector({
+  supportedChainIds: [
+    1, // Mainet
+    3, // Ropsten
+    4, // Rinkeby
+    5, // Goerli
+    42, // Kovan
+  ],
+})
 
-const Index = () => (
-  <Container height="100vh">
-    <Hero />
-    <Main>
-      <Text>
-        Example repository of <Code>Next.js</Code> + <Code>chakra-ui</Code> +{' '}
-        <Code>typescript</Code>.
-      </Text>
+function getLibrary(provider: any): Web3Provider {
+  const library = new Web3Provider(provider)
+  library.pollingInterval = 12000
+  return library
+}
 
-      <List spacing={3} my={0}>
-        <ListItem>
-          <ListIcon as={CheckCircleIcon} color="green.500" />
-          <ChakraLink
-            isExternal
-            href="https://chakra-ui.com"
-            flexGrow={1}
-            mr={2}
-          >
-            Chakra UI <LinkIcon />
-          </ChakraLink>
-        </ListItem>
-        <ListItem>
-          <ListIcon as={CheckCircleIcon} color="green.500" />
-          <ChakraLink isExternal href="https://nextjs.org" flexGrow={1} mr={2}>
-            Next.js <LinkIcon />
-          </ChakraLink>
-        </ListItem>
-      </List>
-    </Main>
+export const Wallet = () => {
+  const {chainId, account, activate, active} = useWeb3React<Web3Provider>()
 
-    <DarkModeSwitch />
-    <Footer>
-      <Text>Next ❤️ Chakra</Text>
-    </Footer>
-    <CTA />
-  </Container>
-)
+  const onClick = () => {
+    activate(injectedConnector)
+  }
+
+  return (
+    <div>
+      <div>ChainId: {chainId}</div>
+      <div>Account: {account}</div>
+      {active ? (
+        <div>✅ </div>
+      ) : (
+        <button type="button" onClick={onClick}>
+          Connect
+        </button>
+      )}
+    </div>
+  )
+}
+
+const Index = () => {
+  return (
+    <Web3ReactProvider getLibrary={getLibrary}>
+      <Wallet />
+    </Web3ReactProvider>
+  )
+}
 
 export default Index
